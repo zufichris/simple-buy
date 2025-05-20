@@ -1,4 +1,5 @@
 export interface User {
+  id: number;
   name: string;
   email: string;
   password: string;
@@ -7,11 +8,12 @@ export interface User {
 }
 
 export interface Product {
+  id: number;
   title: string;
   description: string;
-  price: string;
+  price: number;
   category: string;
   image: string;
-  amountInstock: number;
+  amountInStock: number;
   amountSold: number;
 }
