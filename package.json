@@ -4,7 +4,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
-    "migrate": "bun scripts.ts --migrate"
+    "migrate": "bun scripts.ts --migrate",
+    "seed": "bun scripts.ts --seed"
   },
   "dependencies": {
     "@elysiajs/swagger": "^1.3.0",
