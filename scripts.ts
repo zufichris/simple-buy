@@ -70,15 +70,20 @@ async function runSeed() {
 
   await sql`DELETE FROM users`;
   await sql`DELETE FROM products`;
-
   await Promise.all(
     products.map((product) =>
       sql`
         INSERT INTO products
-        (id, title, description, price, category, image, amountInStock, amountSold)
+        (id, title, description, price, category, image, amount_in_Stock, amount_sold)
         VALUES (
-          ${product.id}, ${product.title}, ${product.description}, ${product.price},
-          ${product.category}, ${product.image}, ${product.amountInStock}, ${product.amountSold}
+          ${product.id},
+          ${product.title},
+          ${product.description},
+          ${product.price},
+          ${product.category},
+          ${product.image},
+          ${product.amountInStock ?? 0},
+          ${product.amountSold ?? 0}
         )
       `.then(() => console.log("Added Product", product)),
     ),
@@ -88,7 +93,7 @@ async function runSeed() {
     users.map((user) =>
       sql`
         INSERT INTO users
-        (id, name, email, password, phone, isActive)
+        (id, name, email, password, phone, is_active)
         VALUES (
           ${user.id}, ${user.name}, ${user.email}, ${user.password}, ${user.phone ?? null}, ${user.isActive}
         )
