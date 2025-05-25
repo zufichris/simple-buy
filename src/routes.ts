@@ -1,5 +1,6 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia, t } from "elysia";
+import { UserService } from "./user.service";
 
 const router = new Elysia();
 
@@ -10,7 +11,8 @@ router
         info: {
           title: "Super Buy Documentation",
           version: "1.0",
-          description: "A simple e-commerce application API documentation",
+          description:
+            "A simple e-commerce application to demonstrate popular API infrastructures",
           license: {
             name: "MIT",
           },
@@ -22,168 +24,138 @@ router
     detail: {
       summary: "Welcome Message",
       tags: ["Welcome"],
-      description: "Returns a welcome message",
+      description: "Returns a welcome Message",
     },
   })
-  // Auth Group (already present)
-  .group("/auth", (authRoutes) =>
-    authRoutes
-      .post("/login", ({ body }) => body, {
-        body: t.Object({
-          email: t.String({ error: "Invalid Email", format: "email" }),
-          password: t.String({ error: "Invalid Password" }),
-        }),
-        detail: {
-          tags: ["Authentication"],
-          summary: "Login",
-          description: "Allows users to log in",
-        },
-      })
-      .post("/register", ({ body }) => body, {
-        body: t.Object({
-          username: t.String({ minLength: 5 }),
-          email: t.String({ format: "email" }),
-          password: t.String(),
-          phone: t.String(),
-        }),
-        detail: {
-          tags: ["Authentication"],
-          summary: "Register Users",
-          description: "Allows new users to register",
-        },
-      })
-      .post(
-        "/forget-password",
-        () => ({
-          message: "This is Login Router",
-        }),
-        {
-          detail: {
-            tags: ["Authentication"],
-            summary: "Reset Password",
-            description: "Allows users to reset their passwords",
-          },
-        },
-      ),
-  )
 
-  // USERS GROUP
-  .group("/users", (userRoutes) =>
-    userRoutes
-      .get("/", () => [], {
+  // USER ROUTES GROUP
+  .group("/users", (users) => {
+    const userService = new UserService();
+    return users
+      .get("/", () => userService.list(), {
         detail: {
           tags: ["Users"],
-          summary: "List Users",
-          description: "Retrieve a list of all users",
+          summary: "Get All Users",
+          description: "Retrieve a list of all registered users.",
+          responses: {
+            200: {
+              description: "A list of user objects.",
+            },
+          },
         },
       })
-      .get("/:id", ({ params }) => params.id, {
-        params: t.Object({ id: t.Numeric() }),
+      .get("/:id", ({ params }) => userService.get(params.id), {
+        params: t.Object({
+          id: t.Numeric(),
+        }),
         detail: {
           tags: ["Users"],
           summary: "Get User By ID",
-          description: "Retrieve a specific user by their ID",
+          description: "Retrieve a user by their unique ID.",
         },
       })
-      .post("/", ({ body }) => body, {
-        body: t.Object({
-          name: t.String(),
-          email: t.String({ format: "email" }),
-          password: t.String(),
-          phone: t.String(),
-        }),
-        detail: {
-          tags: ["Users"],
-          summary: "Create User",
-          description: "Add a new user to the database",
+      .patch(
+        "/:id",
+        ({ params, body }) => userService.update(params.id, body),
+        {
+          params: t.Object({
+            id: t.Numeric(),
+          }),
+          body: t.Partial(
+            t.Object({
+              name: t.String(),
+              email: t.String({ format: "email" }),
+              phone: t.String(),
+            }),
+          ),
+          detail: {
+            tags: ["Users"],
+            summary: "Update User",
+            description: "Update a user's information.",
+          },
         },
-      })
-      .put("/:id", ({ params, body }) => ({ ...body, id: params.id }), {
-        params: t.Object({ id: t.Numeric() }),
-        body: t.Object({
-          name: t.String(),
-          email: t.String({ format: "email" }),
-          password: t.String(),
-          phone: t.String(),
-        }),
-        detail: {
-          tags: ["Users"],
-          summary: "Update User",
-          description: "Update user details by ID",
+      )
+      .delete(
+        "/:id",
+        ({ params }) => ({ deleted: userService.delete(params.id), ...params }),
+        {
+          params: t.Object({
+            id: t.Numeric(),
+          }),
+          detail: {
+            tags: ["Users"],
+            summary: "Delete User",
+            description: "Remove a user by their unique ID.",
+          },
         },
-      })
-      .delete("/:id", ({ params }) => params.id, {
-        params: t.Object({ id: t.Numeric() }),
-        detail: {
-          tags: ["Users"],
-          summary: "Delete User",
-          description: "Delete a user by their ID",
-        },
-      }),
-  )
+      );
+  })
 
-  // PRODUCTS GROUP
-  .group("/products", (productRoutes) =>
-    productRoutes
+  // PRODUCT ROUTES GROUP
+  .group("/products", (products) =>
+    products
       .get("/", () => [], {
         detail: {
           tags: ["Products"],
-          summary: "List Products",
-          description: "Retrieve a list of all products",
+          summary: "Get All Products",
+          description: "Retrieve a list of all available products.",
         },
       })
-      .get("/:id", ({ params }) => params.id, {
-        params: t.Object({ id: t.Numeric() }),
+      .get("/:id", ({ params }) => params, {
+        params: t.Object({
+          id: t.Numeric(),
+        }),
         detail: {
           tags: ["Products"],
           summary: "Get Product By ID",
-          description: "Retrieve a specific product by its ID",
+          description: "Retrieve a product by its unique ID.",
         },
       })
       .post("/", ({ body }) => body, {
         body: t.Object({
-          title: t.String(),
+          name: t.String(),
           description: t.String(),
-          price: t.Numeric(),
-          category: t.String(),
-          image: t.String(),
-          amountInStock: t.Numeric(),
-          amountSold: t.Numeric(),
+          price: t.Number(),
+          stock: t.Number(),
         }),
         detail: {
           tags: ["Products"],
           summary: "Create Product",
-          description: "Add a new product to the database",
+          description: "Create a new product.",
         },
       })
-      .put("/:id", ({ params, body }) => ({ ...body, id: params.id }), {
-        params: t.Object({ id: t.Numeric() }),
-        body: t.Object({
-          title: t.String(),
-          description: t.String(),
-          price: t.Numeric(),
-          category: t.String(),
-          image: t.String(),
-          amountInStock: t.Numeric(),
-          amountSold: t.Numeric(),
+      .put("/:id", ({ params, body }) => ({ ...params, ...body }), {
+        params: t.Object({
+          id: t.Numeric(),
         }),
+        body: t.Partial(
+          t.Object({
+            name: t.String(),
+            description: t.String(),
+            price: t.Number(),
+            stock: t.Number(),
+          }),
+        ),
         detail: {
           tags: ["Products"],
           summary: "Update Product",
-          description: "Update product details by ID",
+          description: "Update product details by ID.",
         },
       })
-      .delete("/:id", ({ params }) => params.id, {
-        params: t.Object({ id: t.Numeric() }),
+      .delete("/:id", ({ params }) => ({ deleted: true, ...params }), {
+        params: t.Object({
+          id: t.Numeric(),
+        }),
         detail: {
           tags: ["Products"],
           summary: "Delete Product",
-          description: "Delete a product by its ID",
+          description: "Remove a product by its unique ID.",
         },
       }),
   )
+
   .onError(({ error }) => {
-    console.log("An Error occurred", error);
+    console.log("An error occurred", error);
   });
 
 export default router;
