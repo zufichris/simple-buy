@@ -1,36 +1,34 @@
-import { Elysia } from "elysia";
-import { swagger } from "@elysiajs/swagger";
-import router from "./routes";
+import { App } from "./shared/app";
+import { getEnvVar } from "./shared/config/env";
 
-const app = new Elysia()
-  .onAfterHandle(({ server, request, set, response, store, status }) => {
-    console.log(
-      `${request.method}/ ${set.status} IP:${server?.requestIP(request)?.address}`,
-    );
-  })
-  .use(
-    swagger({
-      documentation: {
-        info: {
-          title: "Super Buy Documentation",
-          version: "1.0",
-          description:
-            "A simple e-comerce application to demonstrate popular  API infrastructures",
-          license: {
-            name: "MIT",
-          },
-        },
-      },
-    }),
-  )
-  .get("/", async () => {
-    return {
-      message: "Hello World",
-    };
-  })
-  .use(router)
-  .listen(3000);
+const app = new App({
+  port: Number(getEnvVar("PORT")),
+  cors: {
+    origin: process.env.ALLOWED_ORIGINS?.split(",") || [
+      "http://localhost:5000",
+    ],
+    credentials: true,
+  },
+  swagger: {
+    enabled: true,
+    path: "/docs",
+  },
+  logging: {
+    enabled: true,
+    level: "debug",
+  },
 
-console.log(
-  `Super Buy is running at ${app.server?.hostname}:${app.server?.port}`,
-);
+  db: {
+    dbName: getEnvVar("DB_NAME"),
+    host: getEnvVar("DB_HOST"),
+    password: getEnvVar("DB_PASS"),
+    port: Number(getEnvVar("DB_PORT")),
+    username: getEnvVar("DB_USER"),
+    prepare: getEnvVar("ENV").includes("prod"),
+    connectTimeout: 10,
+    maxConnections: 20,
+    ssl: false,
+  },
+});
+
+app.start();
