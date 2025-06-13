@@ -185,7 +185,7 @@ export class App {
 
   async setupGracefulShutdown(): Promise<void> {
     async function shutdown(signal: string, db: Database) {
-      db.close();
+     await db.close();
       console.log(`${signal} Sinal\n`,"Gracefully Shutting Down");
       process.exit(0);
     }
