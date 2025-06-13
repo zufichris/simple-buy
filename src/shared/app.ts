@@ -184,6 +184,12 @@ export class App {
   }
 
   async setupGracefulShutdown(): Promise<void> {
+    /**
+     * Closes the database connection and terminates the process in response to a shutdown signal.
+     *
+     * @param signal - The received shutdown signal (e.g., 'SIGTERM', 'SIGINT').
+     * @param db - The database instance to close.
+     */
     async function shutdown(signal: string, db: Database) {
       db.close();
       console.log(`${signal} Sinal\n`,"Gracefully Shutting Down");
