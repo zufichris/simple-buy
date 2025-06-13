@@ -31,7 +31,7 @@ export class App {
   private userRepository?: UserRepository;
   private userService?: UserService;
   private userControllers?: UserControllers;
- private userModule?: UserModule;
+  private userModule?: UserModule;
 
   constructor(private readonly config: AppConfig) {
     this.app = new Elysia({ name: "SuperBuy API" });
@@ -72,7 +72,7 @@ export class App {
 
   private setupMiddlewares(): void {
     if (this.config.logging?.enabled) {
-      this.app.onRequest(function ({ request, server }) {
+      this.app.onRequest(function({ request, server }) {
         const timestamp = new Date().toISOString();
         const ip = server?.requestIP(request)?.address || "unknown";
         console.log(
@@ -80,7 +80,7 @@ export class App {
         );
       });
 
-      this.app.onAfterHandle(function ({ request, set, server }) {
+      this.app.onAfterHandle(function({ request, set, server }) {
         const timestamp = new Date().toISOString();
         const ip = server?.requestIP(request)?.address || "unknown";
         const status = set.status || 200;
@@ -88,16 +88,12 @@ export class App {
       });
     }
 
-    this.app.derive(function () {
+    this.app.derive(function() {
       const startTime = Date.now();
       return {
         startTime,
         getExecutionTime: () => Date.now() - startTime,
       };
-    });
-
-    this.app.onAfterHandle(function ({ set, request }) {
-      console.log(`${request.method} Completed in ${set.status}`);
     });
   }
 
@@ -161,11 +157,11 @@ export class App {
 
     try {
       this.setupGracefulShutdown();
-
-      this.app.listen(serverPort);
       if (!this.db.isConnected()) {
         await this.db.connect();
       }
+
+      this.app.listen(serverPort);
       console.log(`SuperBuy is running at http://localhost:${serverPort}`);
 
       if (this.config.swagger?.enabled) {
@@ -185,8 +181,8 @@ export class App {
 
   async setupGracefulShutdown(): Promise<void> {
     async function shutdown(signal: string, db: Database) {
-     await db.close();
-      console.log(`${signal} Sinal\n`,"Gracefully Shutting Down");
+      await db.close();
+      console.log(`${signal} Sinal\n`, "Gracefully Shutting Down");
       process.exit(0);
     }
     process.on("SIGTERM", () => shutdown("SIGTERM", this.db));
